@@ -12,6 +12,10 @@ export const authClient = createAuthClient({
   baseURL: import.meta.env.VITE_API_URL
     ? `${import.meta.env.VITE_API_URL.replace(/\/$/, "")}/auth`
     : "https://basa-sajai-backend.vercel.app/api/auth",
+
+  fetchOptions: {
+    credentials: "include",
+  },
 });
 
 export const { signIn, signOut, useSession } = authClient;
