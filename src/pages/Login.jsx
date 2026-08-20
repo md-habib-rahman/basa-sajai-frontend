@@ -6,7 +6,7 @@ export default function Login() {
   const handleGoogleLogin = async () => {
     await signIn.social({
       provider: "google",
-      callbackURL: "http://localhost:5173/inventory",
+      callbackURL: "https://basa-sajai-frontend.vercel.app/inventory",
     });
   };
 
@@ -15,7 +15,6 @@ export default function Login() {
       <div className="hero-content text-center">
         <div className="card w-full max-w-sm shadow-2xl bg-base-100 rounded-2xl">
           <div className="card-body items-center text-center">
-           
             <h2 className="card-title text-2xl font-bold">
               <img src="/Basa-Sajai-Logo-1-02.png" alt="" />
             </h2>
