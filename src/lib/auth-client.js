@@ -10,7 +10,7 @@ import { createAuthClient } from "better-auth/react";
 
 export const authClient = createAuthClient({
   baseURL: import.meta.env.VITE_API_URL
-    ? `${import.meta.env.VITE_API_URL.replace(/\/$/, "")}/auth`
+    ? `${import.meta.env.VITE_API_URL.replace(/\/$/, "")}/api/auth`
     : "https://basa-sajai-backend.vercel.app/api/auth",
 
   fetchOptions: {
