@@ -113,6 +113,13 @@ export default function Inventory() {
     setIsModalOpen(true);
   };
 
+  const unitCost =
+    Number(formData.stockQuantity) > 0
+      ? (Number(formData.totalPurchasePrice || 0) +
+          Number(formData.shippingCost || 0)) /
+        Number(formData.stockQuantity)
+      : 0;
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
@@ -423,6 +430,15 @@ export default function Inventory() {
                       className="hidden"
                     />
                   </label>
+                </div>
+                <div className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 flex items-center justify-between">
+                  <span className="text-xs font-medium text-slate-600">
+                    Per Unit Costing
+                  </span>
+
+                  <span className="text-sm font-semibold font-mono text-slate-900">
+                    ৳ {unitCost.toFixed(2)}
+                  </span>
                 </div>
               </div>
 
