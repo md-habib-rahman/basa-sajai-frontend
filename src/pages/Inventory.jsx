@@ -409,36 +409,44 @@ export default function Inventory() {
                 <label className="text-[11px] text-slate-600 font-medium block mb-1">
                   Product Photo
                 </label>
-                <div className="flex items-center gap-3">
-                  {imagePreview ? (
-                    <img
-                      src={imagePreview}
-                      alt="Preview"
-                      className="w-12 h-12 rounded-xl object-cover border border-slate-200"
-                    />
-                  ) : (
-                    <div className="w-12 h-12 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-center text-slate-400">
-                      <FiImage className="w-5 h-5" />
-                    </div>
-                  )}
-                  <label className="cursor-pointer inline-flex items-center gap-1.5 px-3 py-1.5 border border-slate-200 rounded-xl text-xs font-medium text-slate-700 bg-slate-50 hover:bg-slate-100">
-                    <FiUpload className="w-3.5 h-3.5" /> Upload File
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={handleFileChange}
-                      className="hidden"
-                    />
-                  </label>
-                </div>
-                <div className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 flex items-center justify-between">
-                  <span className="text-xs font-medium text-slate-600">
-                    Per Unit Costing
-                  </span>
 
-                  <span className="text-sm font-semibold font-mono text-slate-900">
-                    ৳ {unitCost.toFixed(2)}
-                  </span>
+                <div className="flex items-center justify-between gap-3">
+                  {/* Image + Upload */}
+                  <div className="flex items-center gap-3">
+                    {imagePreview ? (
+                      <img
+                        src={imagePreview}
+                        alt="Preview"
+                        className="w-12 h-12 rounded-xl object-cover border border-slate-200"
+                      />
+                    ) : (
+                      <div className="w-12 h-12 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-center text-slate-400">
+                        <FiImage className="w-5 h-5" />
+                      </div>
+                    )}
+
+                    <label className="cursor-pointer inline-flex items-center gap-1.5 px-3 py-1.5 border border-slate-200 rounded-xl text-xs font-medium text-slate-700 bg-slate-50 hover:bg-slate-100">
+                      <FiUpload className="w-3.5 h-3.5" />
+                      Upload File
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleFileChange}
+                        className="hidden"
+                      />
+                    </label>
+                  </div>
+
+                  {/* Per Unit Cost */}
+                  <div className="min-w-[110px] rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-right">
+                    <p className="text-[10px] font-medium text-slate-500">
+                      Per Unit Cost
+                    </p>
+
+                    <p className="text-sm font-semibold font-mono text-slate-900">
+                      ৳ {unitCost.toFixed(2)}
+                    </p>
+                  </div>
                 </div>
               </div>
 
