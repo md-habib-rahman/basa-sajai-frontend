@@ -152,12 +152,14 @@ export default function Order1() {
   };
 
   // Inline update for Actual Received Amount
-  const handleActualReceivedBlur = async (orderId, value) => {
+  const handleActualReceivedBlur = async (orderId, value, currentStatus) => {
     try {
       const numVal = value === "" ? null : Number(value);
       const res = await api.patch(`/orders/${orderId}/status`, {
+        status: currentStatus,
         actualReceivedAmount: numVal,
       });
+
       if (res.data.success) {
         setOrders((prev) =>
           prev.map((o) =>
@@ -166,6 +168,7 @@ export default function Order1() {
         );
       }
     } catch (err) {
+      console.error("Failed to update actual received amount:", err);
       alert("Failed to update actual received amount");
     }
   };
@@ -357,7 +360,11 @@ export default function Order1() {
                         placeholder="Courier payout"
                         defaultValue={order.actualReceivedAmount ?? ""}
                         onBlur={(e) =>
-                          handleActualReceivedBlur(order.id, e.target.value)
+                          handleActualReceivedBlur(
+                            order.id,
+                            e.target.value,
+                            order.status,
+                          )
                         }
                         className="w-24 text-right bg-emerald-50/60 border border-emerald-200/80 rounded-lg px-2 py-1 text-xs font-mono font-bold text-emerald-800 focus:bg-white focus:ring-2 focus:ring-emerald-300"
                       />
