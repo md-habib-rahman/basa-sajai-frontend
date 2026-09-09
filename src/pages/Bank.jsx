@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { api } from "../lib/api";
-import Pagination from "../components/common/Pagination";
+
 import {
   FiDollarSign,
   FiPlus,
@@ -13,6 +13,7 @@ import {
   FiArrowDownLeft,
   FiCheckCircle,
 } from "react-icons/fi";
+import Pagination from "../common/Pagination";
 
 export default function Bank() {
   const [transactions, setTransactions] = useState([]);
