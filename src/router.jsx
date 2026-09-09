@@ -12,6 +12,7 @@ import Investments from "./pages/Investments";
 import AdminUsers from "./pages/AdminUsers";
 import RoiDashboard from "./pages/RoiDashboard";
 import Order1 from "./pages/Order1";
+import Bank from "./pages/Bank";
 
 export const router = createBrowserRouter([
   {
@@ -37,6 +38,7 @@ export const router = createBrowserRouter([
               { path: "/investments", element: <Investments /> },
               { path: "/roi", element: <RoiDashboard /> },
               { path: "/users", element: <AdminUsers /> },
+              { path: "/bank", element: <Bank /> },
             ],
           },
         ],

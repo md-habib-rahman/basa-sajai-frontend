@@ -10,6 +10,7 @@ import {
   FiTrendingUp,
   FiMenu,
   FiX,
+  FiDollarSign,
 } from "react-icons/fi";
 
 export default function AppLayout() {
@@ -38,6 +39,7 @@ export default function AppLayout() {
             label: "User Admin",
             icon: FiUsers,
           },
+          { path: "/bank", label: "Bank & Treasury", icon: FiDollarSign },
           {
             path: "/investments",
             label: "Investment Ledger",
