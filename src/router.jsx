@@ -4,15 +4,15 @@ import { createBrowserRouter, Navigate } from "react-router";
 import Login from "./pages/Login";
 import InactiveAccount from "./pages/InactiveAccount";
 import ProtectedRoute from "./components/common/ProtectedRoute";
-import AppLayout from "./components/layout/AppLayout";
 
 import Inventory from "./pages/Inventory";
-import Orders from "./pages/Orders";
+
 import Investments from "./pages/Investments";
 import AdminUsers from "./pages/AdminUsers";
 import RoiDashboard from "./pages/RoiDashboard";
 import Order1 from "./pages/Order1";
 import Bank from "./pages/Bank";
+import AppLayout1 from "./components/layout/AppLayout1";
 
 export const router = createBrowserRouter([
   {
@@ -27,7 +27,7 @@ export const router = createBrowserRouter([
     element: <ProtectedRoute />,
     children: [
       {
-        element: <AppLayout />,
+        element: <AppLayout1 />,
         children: [
           { path: "/", element: <Navigate to="/inventory" replace /> },
           { path: "/inventory", element: <Inventory /> },
