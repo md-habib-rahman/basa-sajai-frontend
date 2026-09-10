@@ -241,6 +241,7 @@ export default function Bank() {
           <table className="w-full text-left text-xs">
             <thead>
               <tr className="bg-slate-50/80 border-b border-slate-200/80 text-slate-500 uppercase tracking-wider text-[10px] font-semibold">
+                <th className="py-3 px-4">#</th>
                 <th className="py-3 px-4">Date</th>
                 <th className="py-3 px-4">Description</th>
                 <th className="py-3 px-4 text-center">Type</th>
@@ -263,11 +264,14 @@ export default function Bank() {
                   </td>
                 </tr>
               ) : (
-                transactions.map((item) => (
+                transactions.map((item, index) => (
                   <tr
                     key={item.id}
                     className="hover:bg-slate-50/50 transition-colors"
                   >
+                    <td className="py-3 px-4 font-mono text-slate-500 text-[11px]">
+                      {index + 1}
+                    </td>
                     <td className="py-3 px-4 font-mono text-slate-500 text-[11px]">
                       {new Date(item.transactionDate).toLocaleDateString(
                         "en-US",

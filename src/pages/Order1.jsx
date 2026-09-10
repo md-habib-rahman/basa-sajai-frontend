@@ -285,6 +285,7 @@ export default function Order1() {
           <table className="w-full text-left text-xs">
             <thead>
               <tr className="bg-slate-50/80 border-b border-slate-200/80 text-slate-500 uppercase tracking-wider text-[10px] font-semibold">
+                <th className="py-3 px-4">#</th>
                 <th className="py-3 px-4">Order #</th>
                 <th className="py-3 px-4">Customer</th>
                 <th className="py-3 px-4">Phone</th>
@@ -312,14 +313,15 @@ export default function Order1() {
                   </td>
                 </tr>
               ) : (
-                orders.map((order) => (
+                orders.map((order, index) => (
                   <tr
                     key={order.id}
                     className="hover:bg-slate-50/50 transition-colors"
                   >
                     <td className="py-3 px-4 font-mono font-semibold text-slate-800">
-                      {order.orderNumber}
+                      {index + 1}
                     </td>
+
                     <td className="py-3 px-4 font-medium text-slate-800">
                       {order.customerName}
                     </td>

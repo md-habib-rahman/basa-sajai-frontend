@@ -11,7 +11,6 @@ import {
   FiEdit3,
   FiDollarSign,
   FiUser,
-  FiUsers,
 } from "react-icons/fi";
 
 export default function Investments() {
@@ -48,13 +47,17 @@ export default function Investments() {
     try {
       setLoading(true);
       const res = await api.get(
-        `/investments?page=${page}&limit=${limit}&search=${searchQuery}`
+        `/investments?page=${page}&limit=${limit}&search=${searchQuery}`,
       );
       if (res.data.success) {
         setInvestments(res.data.data);
         setMeta(res.data.meta);
         setSummary(
-          res.data.summary || { totalInvestment: 0, habibTotal: 0, robiulTotal: 0 }
+          res.data.summary || {
+            totalInvestment: 0,
+            habibTotal: 0,
+            robiulTotal: 0,
+          },
         );
       }
     } catch (err) {
@@ -70,7 +73,7 @@ export default function Investments() {
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    
+
     setFormData((prev) => {
       const updated = { ...prev, [name]: value };
 
@@ -174,7 +177,9 @@ export default function Investments() {
             onClick={fetchInvestments}
             className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-slate-600 bg-slate-100 hover:bg-slate-200/80 rounded-xl transition-colors"
           >
-            <FiRefreshCw className={`w-3.5 h-3.5 ${loading ? "animate-spin" : ""}`} />
+            <FiRefreshCw
+              className={`w-3.5 h-3.5 ${loading ? "animate-spin" : ""}`}
+            />
             Refresh
           </button>
           <button
@@ -209,7 +214,8 @@ export default function Investments() {
 
         <div className="bg-slate-50 border border-slate-200/80 rounded-2xl p-4">
           <span className="text-[11px] font-medium text-slate-500 uppercase tracking-wider block flex items-center gap-1">
-            <FiUser className="w-3.5 h-3.5 text-slate-400" /> Robiul Contribution
+            <FiUser className="w-3.5 h-3.5 text-slate-400" /> Robiul
+            Contribution
           </span>
           <span className="text-2xl font-bold font-mono text-slate-800 mt-1 block">
             ৳{summary.robiulTotal?.toLocaleString()}
@@ -238,12 +244,17 @@ export default function Investments() {
           <table className="w-full text-left text-xs">
             <thead>
               <tr className="bg-slate-50/80 border-b border-slate-200/80 text-slate-500 uppercase tracking-wider text-[10px] font-semibold">
+                <th className="py-3 px-4">#</th>
                 <th className="py-3 px-4">Date</th>
                 <th className="py-3 px-4">Product Description</th>
                 <th className="py-3 px-4 text-center">Purchaser</th>
                 <th className="py-3 px-4 text-right">Total Cost</th>
-                <th className="py-3 px-4 text-right text-slate-600">Habib Contribution</th>
-                <th className="py-3 px-4 text-right text-slate-600">Robiul Contribution</th>
+                <th className="py-3 px-4 text-right text-slate-600">
+                  Habib Contribution
+                </th>
+                <th className="py-3 px-4 text-right text-slate-600">
+                  Robiul Contribution
+                </th>
                 <th className="py-3 px-4 text-right">Actions</th>
               </tr>
             </thead>
@@ -261,20 +272,31 @@ export default function Investments() {
                   </td>
                 </tr>
               ) : (
-                investments.map((item) => (
-                  <tr key={item.id} className="hover:bg-slate-50/50 transition-colors">
+                investments.map((item, index) => (
+                  <tr
+                    key={item.id}
+                    className="hover:bg-slate-50/50 transition-colors"
+                  >
                     <td className="py-3 px-4 font-mono text-slate-500 text-[11px]">
-                      {new Date(item.investmentDate).toLocaleDateString("en-US", {
-                        year: "numeric",
-                        month: "2-digit",
-                        day: "2-digit",
-                      })}
+                      {index + 1}
+                    </td>
+                    <td className="py-3 px-4 font-mono text-slate-500 text-[11px]">
+                      {new Date(item.investmentDate).toLocaleDateString(
+                        "en-US",
+                        {
+                          year: "numeric",
+                          month: "2-digit",
+                          day: "2-digit",
+                        },
+                      )}
                     </td>
 
                     <td className="py-3 px-4 font-medium text-slate-800">
                       {item.description}
                       {item.notes && (
-                        <div className="text-[10px] text-slate-400 font-normal">{item.notes}</div>
+                        <div className="text-[10px] text-slate-400 font-normal">
+                          {item.notes}
+                        </div>
                       )}
                     </td>
 
@@ -289,11 +311,15 @@ export default function Investments() {
                     </td>
 
                     <td className="py-3 px-4 text-right font-mono text-slate-700">
-                      {item.habibContribution > 0 ? `৳${item.habibContribution.toLocaleString()}` : "—"}
+                      {item.habibContribution > 0
+                        ? `৳${item.habibContribution.toLocaleString()}`
+                        : "—"}
                     </td>
 
                     <td className="py-3 px-4 text-right font-mono text-slate-700">
-                      {item.robiulContribution > 0 ? `৳${item.robiulContribution.toLocaleString()}` : "—"}
+                      {item.robiulContribution > 0
+                        ? `৳${item.robiulContribution.toLocaleString()}`
+                        : "—"}
                     </td>
 
                     <td className="py-3 px-4 text-right space-x-1">
@@ -338,14 +364,19 @@ export default function Investments() {
                 <FiDollarSign className="w-4 h-4 text-slate-500" />
                 {editingId ? "Edit Expense Entry" : "New Partnership Expense"}
               </h2>
-              <button onClick={() => setIsModalOpen(false)} className="text-slate-400 hover:text-slate-600">
+              <button
+                onClick={() => setIsModalOpen(false)}
+                className="text-slate-400 hover:text-slate-600"
+              >
                 <FiX className="w-4 h-4" />
               </button>
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-3">
               <div>
-                <label className="text-[11px] text-slate-600 font-medium block mb-1">Product Description *</label>
+                <label className="text-[11px] text-slate-600 font-medium block mb-1">
+                  Product Description *
+                </label>
                 <input
                   type="text"
                   name="description"
@@ -359,7 +390,9 @@ export default function Investments() {
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="text-[11px] text-slate-600 font-medium block mb-1">Purchaser *</label>
+                  <label className="text-[11px] text-slate-600 font-medium block mb-1">
+                    Purchaser *
+                  </label>
                   <select
                     name="purchaser"
                     value={formData.purchaser}
@@ -373,7 +406,9 @@ export default function Investments() {
                 </div>
 
                 <div>
-                  <label className="text-[11px] text-slate-600 font-medium block mb-1">Total Cost (৳) *</label>
+                  <label className="text-[11px] text-slate-600 font-medium block mb-1">
+                    Total Cost (৳) *
+                  </label>
                   <input
                     type="number"
                     name="totalCost"
@@ -388,7 +423,9 @@ export default function Investments() {
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="text-[11px] text-slate-600 font-medium block mb-1">Habib Contribution (৳)</label>
+                  <label className="text-[11px] text-slate-600 font-medium block mb-1">
+                    Habib Contribution (৳)
+                  </label>
                   <input
                     type="number"
                     name="habibContribution"
@@ -400,7 +437,9 @@ export default function Investments() {
                 </div>
 
                 <div>
-                  <label className="text-[11px] text-slate-600 font-medium block mb-1">Robiul Contribution (৳)</label>
+                  <label className="text-[11px] text-slate-600 font-medium block mb-1">
+                    Robiul Contribution (৳)
+                  </label>
                   <input
                     type="number"
                     name="robiulContribution"
@@ -413,7 +452,9 @@ export default function Investments() {
               </div>
 
               <div>
-                <label className="text-[11px] text-slate-600 font-medium block mb-1">Date *</label>
+                <label className="text-[11px] text-slate-600 font-medium block mb-1">
+                  Date *
+                </label>
                 <input
                   type="date"
                   name="investmentDate"

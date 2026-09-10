@@ -306,6 +306,7 @@ export default function Inventory() {
           <table className="w-full text-left text-xs">
             <thead>
               <tr className="bg-slate-50/80 border-b border-slate-200/80 text-slate-500 uppercase tracking-wider text-[10px] font-semibold">
+                <th className="py-3 px-4">#</th>
                 <th className="py-3 px-4">Image</th>
                 <th className="py-3 px-4">Item & SKU</th>
                 <th className="py-3 px-4 text-center">Qty</th>
@@ -336,11 +337,12 @@ export default function Inventory() {
                   </td>
                 </tr>
               ) : (
-                products.map((item) => (
+                products.map((item, index) => (
                   <tr
                     key={item.id}
                     className="hover:bg-slate-50/50 transition-colors"
                   >
+                    <td className="py-3 px-4 text-center">{index + 1}</td>
                     {/* Thumbnail */}
                     <td className="py-3 px-4">
                       {item.imageUrl ? (
