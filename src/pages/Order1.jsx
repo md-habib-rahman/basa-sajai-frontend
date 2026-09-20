@@ -57,6 +57,8 @@ export default function Order1() {
     }
   };
 
+  //   console.log(orders);
+
   const fetchProductsList = async () => {
     try {
       const res = await api.get("/products?limit=100");
@@ -322,6 +324,9 @@ export default function Order1() {
                       {index + 1}
                     </td>
 
+                    <td className="py-3 px-4 font-medium text-slate-800">
+                      {order.orderNumber}
+                    </td>
                     <td className="py-3 px-4 font-medium text-slate-800">
                       {order.customerName}
                     </td>

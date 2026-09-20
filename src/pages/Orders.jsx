@@ -9,11 +9,8 @@ import {
   FiPrinter,
   FiTrash2,
   FiX,
-  FiCheckCircle,
-  FiClock,
-  FiPackage,
-  FiTruck,
   FiEye,
+  FiEdit3,
 } from "react-icons/fi";
 
 export default function Orders() {
@@ -28,8 +25,9 @@ export default function Orders() {
   const [limit, setLimit] = useState(10);
   const [meta, setMeta] = useState(null);
 
-  // Modals
+  // Modals & Edit Tracking
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [editingOrderId, setEditingOrderId] = useState(null);
   const [invoiceOrder, setInvoiceOrder] = useState(null);
   const [submitting, setSubmitting] = useState(false);
 
@@ -99,7 +97,6 @@ export default function Orders() {
 
     if (field === "productId") {
       updated[index].productId = value;
-      // Auto-populate with actual selling price (or calculated selling price)
       const selectedProduct = products.find((p) => p.id === value);
       if (selectedProduct) {
         updated[index].unitPrice =
@@ -114,27 +111,56 @@ export default function Orders() {
     setFormData((prev) => ({ ...prev, items: updated }));
   };
 
-  const handleCreateOrder = async (e) => {
+  const handleOpenCreateModal = () => {
+    setEditingOrderId(null);
+    setFormData({
+      customerName: "",
+      customerPhone: "",
+      shippingAddress: "",
+      deliveryFee: 120,
+      discountAmount: 0,
+      notes: "",
+      items: [{ productId: "", quantity: 1, unitPrice: "" }],
+    });
+    setIsCreateModalOpen(true);
+  };
+
+  const handleOpenEditModal = (order) => {
+    setEditingOrderId(order.id);
+    setFormData({
+      customerName: order.customerName || "",
+      customerPhone: order.customerPhone || "",
+      shippingAddress: order.shippingAddress || "",
+      deliveryFee: order.deliveryFee ?? 120,
+      discountAmount: order.discountAmount ?? 0,
+      notes: order.notes || "",
+      items:
+        order.items && order.items.length > 0
+          ? order.items.map((item) => ({
+              productId: item.productId,
+              quantity: item.quantity,
+              unitPrice: item.unitPrice,
+            }))
+          : [{ productId: "", quantity: 1, unitPrice: "" }],
+    });
+    setIsCreateModalOpen(true);
+  };
+
+  const handleSaveOrder = async (e) => {
     e.preventDefault();
     try {
       setSubmitting(true);
-      const res = await api.post("/orders", formData);
-      if (res.data.success) {
-        setIsCreateModalOpen(false);
-        setFormData({
-          customerName: "",
-          customerPhone: "",
-          shippingAddress: "",
-          deliveryFee: 120,
-          discountAmount: 0,
-          notes: "",
-          items: [{ productId: "", quantity: 1, unitPrice: "" }],
-        });
-        fetchOrders();
+      if (editingOrderId) {
+        await api.put(`/orders/${editingOrderId}`, formData);
+      } else {
+        await api.post("/orders", formData);
       }
+      setIsCreateModalOpen(false);
+      setEditingOrderId(null);
+      fetchOrders();
     } catch (err) {
       alert(
-        err.response?.data?.message || err.message || "Failed to create order",
+        err.response?.data?.message || err.message || "Failed to save order",
       );
     } finally {
       setSubmitting(false);
@@ -156,6 +182,28 @@ export default function Orders() {
     }
   };
 
+  // Inline update for Actual Received Amount
+  const handleActualReceivedBlur = async (orderId, value, currentStatus) => {
+    try {
+      const numVal = value === "" ? null : Number(value);
+      const res = await api.patch(`/orders/${orderId}/status`, {
+        status: currentStatus,
+        actualReceivedAmount: numVal,
+      });
+
+      if (res.data.success) {
+        setOrders((prev) =>
+          prev.map((o) =>
+            o.id === orderId ? { ...o, actualReceivedAmount: numVal } : o,
+          ),
+        );
+      }
+    } catch (err) {
+      console.error("Failed to update actual received amount:", err);
+      alert("Failed to update actual received amount");
+    }
+  };
+
   const handleDeleteOrder = async (orderId) => {
     if (!window.confirm("Are you sure you want to delete this order?")) return;
     try {
@@ -173,7 +221,6 @@ export default function Orders() {
     }, 150);
   };
 
-  // Dynamic preview total calculation
   const itemsSubtotal = formData.items.reduce((acc, row) => {
     const prd = products.find((p) => p.id === row.productId);
     const effectivePrice =
@@ -202,7 +249,8 @@ export default function Orders() {
             Order Management & Invoicing
           </h1>
           <p className="text-xs text-slate-500 mt-1">
-            Manage customer orders, discounts, and custom item price overrides.
+            Manage customer orders, track courier payout deductions, and print
+            invoices.
           </p>
         </div>
 
@@ -217,7 +265,7 @@ export default function Orders() {
             Refresh
           </button>
           <button
-            onClick={() => setIsCreateModalOpen(true)}
+            onClick={handleOpenCreateModal}
             className="inline-flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-medium text-white bg-slate-900 hover:bg-slate-800 rounded-xl transition-all shadow-xs"
           >
             <FiPlus className="w-3.5 h-3.5" />
@@ -268,6 +316,7 @@ export default function Orders() {
           <table className="w-full text-left text-xs">
             <thead>
               <tr className="bg-slate-50/80 border-b border-slate-200/80 text-slate-500 uppercase tracking-wider text-[10px] font-semibold">
+                <th className="py-3 px-4">#</th>
                 <th className="py-3 px-4">Order #</th>
                 <th className="py-3 px-4">Customer</th>
                 <th className="py-3 px-4">Phone</th>
@@ -275,29 +324,36 @@ export default function Orders() {
                 <th className="py-3 px-4 text-right">Discount</th>
                 <th className="py-3 px-4 text-right">Total Amount</th>
                 <th className="py-3 px-4">Status</th>
+                <th className="py-3 px-4 text-right text-emerald-800">
+                  Actual Received Amount
+                </th>
                 <th className="py-3 px-4 text-right">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
               {loading ? (
                 <tr>
-                  <td colSpan="8" className="text-center py-12 text-slate-400">
+                  <td colSpan="10" className="text-center py-12 text-slate-400">
                     <span className="loading loading-spinner loading-sm"></span>
                   </td>
                 </tr>
               ) : orders.length === 0 ? (
                 <tr>
-                  <td colSpan="8" className="text-center py-12 text-slate-400">
+                  <td colSpan="10" className="text-center py-12 text-slate-400">
                     No orders found.
                   </td>
                 </tr>
               ) : (
-                orders.map((order) => (
+                orders.map((order, index) => (
                   <tr
                     key={order.id}
                     className="hover:bg-slate-50/50 transition-colors"
                   >
                     <td className="py-3 px-4 font-mono font-semibold text-slate-800">
+                      {index + 1}
+                    </td>
+
+                    <td className="py-3 px-4 font-medium text-slate-800">
                       {order.orderNumber}
                     </td>
                     <td className="py-3 px-4 font-medium text-slate-800">
@@ -332,7 +388,32 @@ export default function Orders() {
                         <option value="CANCELLED">Cancelled</option>
                       </select>
                     </td>
+
+                    {/* Inline Editable Actual Received Amount */}
+                    <td className="py-3 px-4 text-right">
+                      <input
+                        type="number"
+                        placeholder="Courier payout"
+                        defaultValue={order.actualReceivedAmount ?? ""}
+                        onBlur={(e) =>
+                          handleActualReceivedBlur(
+                            order.id,
+                            e.target.value,
+                            order.status,
+                          )
+                        }
+                        className="w-24 text-right bg-emerald-50/60 border border-emerald-200/80 rounded-lg px-2 py-1 text-xs font-mono font-bold text-emerald-800 focus:bg-white focus:ring-2 focus:ring-emerald-300"
+                      />
+                    </td>
+
                     <td className="py-3 px-4 text-right space-x-1">
+                      <button
+                        onClick={() => handleOpenEditModal(order)}
+                        className="p-1.5 text-slate-500 hover:text-slate-900 hover:bg-slate-100 rounded-lg"
+                        title="Edit Order"
+                      >
+                        <FiEdit3 className="w-3.5 h-3.5" />
+                      </button>
                       <button
                         onClick={() => setInvoiceOrder(order)}
                         className="p-1.5 text-slate-500 hover:text-slate-900 hover:bg-slate-100 rounded-lg"
@@ -374,13 +455,15 @@ export default function Orders() {
         </div>
       </div>
 
-      {/* Create Order Modal */}
+      {/* Create / Edit Order Modal */}
       {isCreateModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-xs p-4">
           <div className="bg-white border border-slate-200 rounded-2xl max-w-xl w-full p-6 shadow-xl space-y-4 max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between pb-3 border-b border-slate-100">
               <h2 className="text-sm font-semibold text-slate-900">
-                Create Customer Order
+                {editingOrderId
+                  ? "Edit Order Details"
+                  : "Create Customer Order"}
               </h2>
               <button
                 onClick={() => setIsCreateModalOpen(false)}
@@ -390,7 +473,7 @@ export default function Orders() {
               </button>
             </div>
 
-            <form onSubmit={handleCreateOrder} className="space-y-4">
+            <form onSubmit={handleSaveOrder} className="space-y-4">
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="text-[11px] font-medium text-slate-600 block mb-1">
@@ -459,12 +542,8 @@ export default function Orders() {
                 </div>
 
                 {formData.items.map((row, idx) => {
-                  const currentProduct = products.find(
-                    (p) => p.id === row.productId,
-                  );
                   return (
                     <div key={idx} className="flex items-center gap-2">
-                      {/* Dropdown showing actual selling price */}
                       <select
                         required
                         value={row.productId}
@@ -481,7 +560,9 @@ export default function Orders() {
                             <option
                               key={p.id}
                               value={p.id}
-                              disabled={p.stockQuantity <= 0}
+                              disabled={
+                                p.stockQuantity <= 0 && row.productId !== p.id
+                              }
                             >
                               {p.title} (Stock: {p.stockQuantity}) — ৳
                               {priceToDisplay}
@@ -490,7 +571,6 @@ export default function Orders() {
                         })}
                       </select>
 
-                      {/* Manual Price Override */}
                       <div className="relative w-24">
                         <input
                           type="number"
@@ -504,7 +584,6 @@ export default function Orders() {
                         />
                       </div>
 
-                      {/* Quantity */}
                       <input
                         type="number"
                         min="1"
@@ -612,7 +691,13 @@ export default function Orders() {
                   disabled={submitting}
                   className="px-4 py-1.5 text-xs font-medium text-white bg-slate-900 rounded-xl"
                 >
-                  {submitting ? "Creating..." : "Confirm Order"}
+                  {submitting
+                    ? editingOrderId
+                      ? "Updating..."
+                      : "Creating..."
+                    : editingOrderId
+                      ? "Update Order"
+                      : "Confirm Order"}
                 </button>
               </div>
             </form>
@@ -700,6 +785,12 @@ export default function Orders() {
               <div className="text-sm font-bold text-slate-900 font-mono pt-1">
                 Grand Total: ৳{invoiceOrder.totalAmount?.toLocaleString()}
               </div>
+              {invoiceOrder.actualReceivedAmount !== null && (
+                <div className="text-xs font-bold text-emerald-700 font-mono">
+                  Actual Courier Payout: ৳
+                  {invoiceOrder.actualReceivedAmount?.toLocaleString()}
+                </div>
+              )}
             </div>
 
             <div className="flex justify-end gap-2 pt-2">

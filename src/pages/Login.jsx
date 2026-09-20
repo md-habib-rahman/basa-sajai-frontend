@@ -1,12 +1,13 @@
 import React from "react";
 import { signIn } from "../lib/auth-client";
-import { FiShoppingBag } from "react-icons/fi";
 
 export default function Login() {
   const handleGoogleLogin = async () => {
     await signIn.social({
       provider: "google",
-      callbackURL: "https://basa-sajai-frontend.vercel.app/inventory",
+      callbackURL: import.meta.env.VITE_APP_URL
+        ? `${import.meta.env.VITE_APP_URL}/inventory`
+        : "https://basa-sajai-frontend.vercel.app/inventory",
     });
   };
 

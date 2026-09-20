@@ -10,9 +10,9 @@ import Inventory from "./pages/Inventory";
 import Investments from "./pages/Investments";
 import AdminUsers from "./pages/AdminUsers";
 import RoiDashboard from "./pages/RoiDashboard";
-import Order1 from "./pages/Order1";
 import Bank from "./pages/Bank";
 import AppLayout1 from "./components/layout/AppLayout1";
+import Orders from "./pages/Orders";
 
 export const router = createBrowserRouter([
   {
@@ -31,7 +31,7 @@ export const router = createBrowserRouter([
         children: [
           { path: "/", element: <Navigate to="/inventory" replace /> },
           { path: "/inventory", element: <Inventory /> },
-          { path: "/orders", element: <Order1 /> },
+          { path: "/orders", element: <Orders /> },
           {
             element: <ProtectedRoute allowedRoles={["ADMIN", "SUPER_ADMIN"]} />,
             children: [
