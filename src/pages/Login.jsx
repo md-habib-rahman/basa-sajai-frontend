@@ -5,9 +5,7 @@ export default function Login() {
   const handleGoogleLogin = async () => {
     await signIn.social({
       provider: "google",
-      callbackURL: import.meta.env.VITE_APP_URL
-        ? `${import.meta.env.VITE_APP_URL}/`
-        : "https://basa-sajai-frontend.vercel.app/",
+      callbackURL: "https://basa-sajai-frontend.vercel.app/",
     });
   };
 
