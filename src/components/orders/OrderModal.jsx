@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { FiX, FiPlus } from "react-icons/fi";
+import CustomerAutosuggest from "./CustomerAutosuggest";
 
 export default function OrderModal({
   isOpen,
@@ -109,36 +110,7 @@ export default function OrderModal({
         </div>
 
         <form onSubmit={onSubmit} className="space-y-4">
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="text-[11px] font-medium text-slate-600 block mb-1">
-                Customer Name *
-              </label>
-              <input
-                type="text"
-                required
-                value={formData.customerName}
-                onChange={(e) =>
-                  setFormData({ ...formData, customerName: e.target.value })
-                }
-                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-1.5 text-xs text-slate-800"
-              />
-            </div>
-            <div>
-              <label className="text-[11px] font-medium text-slate-600 block mb-1">
-                Customer Phone *
-              </label>
-              <input
-                type="text"
-                required
-                value={formData.customerPhone}
-                onChange={(e) =>
-                  setFormData({ ...formData, customerPhone: e.target.value })
-                }
-                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-1.5 text-xs font-mono text-slate-800"
-              />
-            </div>
-          </div>
+          <CustomerAutosuggest formData={formData} setFormData={setFormData} />
 
           <div>
             <label className="text-[11px] font-medium text-slate-600 block mb-1">

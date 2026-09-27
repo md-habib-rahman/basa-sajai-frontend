@@ -3,16 +3,13 @@ import { api } from "../lib/api";
 import Pagination from "../common/Pagination";
 import OrderModal from "../components/orders/OrderModal";
 import InvoiceModal from "../components/orders/InvoiceModal";
+import SteadfastOrdersHeader from "../components/orders/SteadfastOrdersHeader";
+import SteadfastOrderFilters from "../components/orders/SteadfastOrderFilters";
 import {
-  FiShoppingCart,
-  FiPlus,
-  FiSearch,
-  FiRefreshCw,
   FiPrinter,
   FiTrash2,
   FiEye,
   FiEdit3,
-  FiTruck,
   FiCheckCircle,
 } from "react-icons/fi";
 
@@ -247,90 +244,22 @@ export default function OrdersSteadfast() {
 
   return (
     <div className="space-y-8">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-slate-100">
-        <div>
-          <h1 className="text-lg font-semibold tracking-tight text-slate-900 flex items-center gap-2">
-            <FiShoppingCart className="w-4 h-4 text-slate-500" />
-            Order Management & Fulfillment
-          </h1>
-          <p className="text-xs text-slate-500 mt-1">
-            Manage customer orders, discounts, Steadfast dispatching, and
-            courier payouts.
-          </p>
-        </div>
-
-        <div className="flex items-center gap-2.5">
-          {steadfastBalance !== null && (
-            <div className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-50 text-emerald-800 border border-emerald-200/80 rounded-xl text-xs font-medium font-mono">
-              <FiTruck className="w-3.5 h-3.5 text-emerald-600" />
-              <span>Steadfast: ৳{steadfastBalance.toLocaleString()}</span>
-              <button
-                onClick={fetchSteadfastBalance}
-                title="Refresh Steadfast Balance"
-                className="hover:rotate-180 transition-transform duration-300 ml-1"
-              >
-                <FiRefreshCw
-                  className={`w-3 h-3 ${balanceLoading ? "animate-spin" : ""}`}
-                />
-              </button>
-            </div>
-          )}
-
-          <button
-            onClick={fetchOrders}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-slate-600 bg-slate-100 hover:bg-slate-200/80 rounded-xl transition-colors"
-          >
-            <FiRefreshCw
-              className={`w-3.5 h-3.5 ${loading ? "animate-spin" : ""}`}
-            />
-            Refresh
-          </button>
-          <button
-            onClick={handleOpenCreateModal}
-            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-medium text-white bg-slate-900 hover:bg-slate-800 rounded-xl transition-all shadow-xs"
-          >
-            <FiPlus className="w-3.5 h-3.5" />
-            Create New Order
-          </button>
-        </div>
-      </div>
+      <SteadfastOrdersHeader
+        balance={steadfastBalance}
+        balanceLoading={balanceLoading}
+        loading={loading}
+        onRefreshBalance={fetchSteadfastBalance}
+        onRefreshOrders={fetchOrders}
+        onCreateOrder={handleOpenCreateModal}
+      />
 
       {/* Filters */}
-      <div className="flex flex-col sm:flex-row gap-3 items-center justify-between">
-        <div className="relative w-full sm:w-72">
-          <FiSearch className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400" />
-          <input
-            type="text"
-            placeholder="Search order #, customer, or phone..."
-            value={searchQuery}
-            onChange={(e) => {
-              setSearchQuery(e.target.value);
-              setPage(1);
-            }}
-            className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-9 pr-3 py-1.5 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-300"
-          />
-        </div>
-
-        <div className="flex items-center gap-2 w-full sm:w-auto">
-          <span className="text-xs text-slate-400 font-medium">Status:</span>
-          <select
-            value={statusFilter}
-            onChange={(e) => {
-              setStatusFilter(e.target.value);
-              setPage(1);
-            }}
-            className="bg-slate-50 border border-slate-200 text-slate-700 text-xs font-medium rounded-xl px-3 py-1.5 focus:outline-none"
-          >
-            <option value="ALL">All Order States</option>
-            <option value="PENDING">Pending</option>
-            <option value="PROCESSING">Processing</option>
-            <option value="SHIPPED">Shipped</option>
-            <option value="DELIVERED">Delivered</option>
-            <option value="CANCELLED">Cancelled</option>
-          </select>
-        </div>
-      </div>
+      <SteadfastOrderFilters
+        searchQuery={searchQuery}
+        statusFilter={statusFilter}
+        onSearchChange={(value) => { setSearchQuery(value); setPage(1); }}
+        onStatusChange={(value) => { setStatusFilter(value); setPage(1); }}
+      />
 
       {/* Orders Table */}
       <div className="border border-slate-200/80 rounded-2xl overflow-hidden bg-white">
