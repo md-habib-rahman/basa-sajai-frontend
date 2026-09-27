@@ -11,6 +11,7 @@ import {
   FiEye,
   FiEdit3,
   FiCheckCircle,
+  FiTruck,
 } from "react-icons/fi";
 
 export default function OrdersSteadfast() {
@@ -257,8 +258,14 @@ export default function OrdersSteadfast() {
       <SteadfastOrderFilters
         searchQuery={searchQuery}
         statusFilter={statusFilter}
-        onSearchChange={(value) => { setSearchQuery(value); setPage(1); }}
-        onStatusChange={(value) => { setStatusFilter(value); setPage(1); }}
+        onSearchChange={(value) => {
+          setSearchQuery(value);
+          setPage(1);
+        }}
+        onStatusChange={(value) => {
+          setStatusFilter(value);
+          setPage(1);
+        }}
       />
 
       {/* Orders Table */}
