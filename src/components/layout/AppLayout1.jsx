@@ -13,7 +13,12 @@ import {
   FiChevronLeft,
   FiChevronRight,
   FiUser,
+  FiPieChart,
 } from "react-icons/fi";
+import { ToastContainer } from "react-toastify";
+import { BsCartCheck } from "react-icons/bs";
+import { AiOutlineApi } from "react-icons/ai";
+import { MdOutlineSpaceDashboard, MdOutlineInventory2 } from "react-icons/md";
 
 export default function AppLayout1() {
   const { data: session } = useSession();
@@ -28,13 +33,34 @@ export default function AppLayout1() {
   const isAdmin = role === "ADMIN" || role === "SUPER_ADMIN";
 
   const navItems = [
+    { path: "/", label: "Dashboard", icon: MdOutlineSpaceDashboard },
     { path: "/inventory", label: "Inventory & Costing", icon: FiBox },
-    { path: "/orders", label: "Order Management", icon: FiShoppingCart },
+    // { path: "/orders", label: "Order Management", icon: FiShoppingCart },
+    {
+      path: "/orders-steadfast-api",
+      label: "Orders Management",
+      icon: FiShoppingCart,
+    },
     { path: "/bank", label: "Bank & Treasury", icon: FiDollarSign },
     { path: "/investments", label: "Investment Ledger", icon: FiCreditCard },
     { path: "/roi", label: "ROI Analytics", icon: FiTrendingUp },
+    { path: "/courier-logs", label: "Steadfast Logs", icon: AiOutlineApi },
+    // {
+    //   path: "/inventory-page",
+    //   label: "Inventory Audit Logs",
+    //   icon: MdOutlineInventory2,
+    // },
+    {
+      path: "/inventory-logs",
+      label: "Inventory & Stock Audit",
+      icon: MdOutlineInventory2,
+    },
+
     ...(isAdmin
-      ? [{ path: "/users", label: "User Admin", icon: FiUsers }]
+      ? [
+          { path: "/reports", label: "Reports", icon: FiPieChart },
+          { path: "/users", label: "User Admin", icon: FiUsers },
+        ]
       : []),
   ];
 
@@ -170,6 +196,18 @@ export default function AppLayout1() {
           <Outlet />
         </main>
       </div>
+      <ToastContainer
+        position="top-right"
+        autoClose={3000}
+        hideProgressBar={false}
+        newestOnTop={true}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="light"
+      />
     </div>
   );
 }

@@ -4,6 +4,7 @@ import { FiChevronLeft, FiChevronRight } from "react-icons/fi";
 export default function Pagination({ meta, onPageChange, onLimitChange }) {
   if (!meta || meta.totalPages <= 1) return null;
 
+  console.log(meta);
   const { currentPage, totalPages, totalItems, itemsPerPage } = meta;
 
   return (
@@ -43,7 +44,7 @@ export default function Pagination({ meta, onPageChange, onLimitChange }) {
         <div className="flex items-center gap-1">
           <button
             onClick={() => onPageChange(currentPage - 1)}
-            disabled={!meta.hasPrevPage}
+            disabled={currentPage === 1}
             className="p-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 disabled:opacity-40 disabled:hover:bg-white text-slate-600 transition-colors"
             title="Previous Page"
           >
@@ -56,7 +57,7 @@ export default function Pagination({ meta, onPageChange, onLimitChange }) {
 
           <button
             onClick={() => onPageChange(currentPage + 1)}
-            disabled={!meta.hasNextPage}
+            disabled={currentPage === totalPages}
             className="p-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 disabled:opacity-40 disabled:hover:bg-white text-slate-600 transition-colors"
             title="Next Page"
           >

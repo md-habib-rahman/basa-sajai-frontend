@@ -2,6 +2,8 @@ import React, { useEffect, useState } from "react";
 import { api } from "../lib/api";
 import { uploadToImgBB } from "../lib/imgbb";
 import Pagination from "../common/Pagination";
+import { toast } from "react-toastify";
+import { confirmDelete } from "../lib/confirm";
 import {
   FiBox,
   FiPlus,
@@ -35,12 +37,10 @@ export default function Inventory() {
 
   const [formData, setFormData] = useState({
     title: "",
-    stockQuantity: 1,
-    purchaseQuantity: 1,
-    totalPurchasePrice: 0,
-    shippingCost: 0,
+    unitPrice: 0,
     marketingCost: 0,
     packagingCost: 0,
+    stockQuantity: 1,
     actualSellingPrice: "",
     imageUrl: "",
   });
@@ -95,12 +95,10 @@ export default function Inventory() {
     setImagePreview("");
     setFormData({
       title: "",
-      stockQuantity: 1,
-      purchaseQuantity: 1,
-      totalPurchasePrice: 0,
-      shippingCost: 0,
+      unitPrice: 0,
       marketingCost: 0,
       packagingCost: 0,
+      stockQuantity: 1,
       actualSellingPrice: "",
       imageUrl: "",
     });
@@ -113,33 +111,26 @@ export default function Inventory() {
     setImagePreview(product.imageUrl || "");
     setFormData({
       title: product.title,
-      stockQuantity: product.stockQuantity,
-      purchaseQuantity: product.purchaseQuantity || product.stockQuantity || 1,
-      totalPurchasePrice: product.totalPurchasePrice,
-      shippingCost: product.shippingCost,
-      marketingCost: product.marketingCost,
-      packagingCost: product.packagingCost,
+      unitPrice: product.unitPrice || 0,
+      marketingCost: product.marketingCost || 0,
+      packagingCost: product.packagingCost || 0,
+      stockQuantity: product.stockQuantity || 0,
       actualSellingPrice: product.actualSellingPrice || "",
       imageUrl: product.imageUrl || "",
     });
     setIsModalOpen(true);
   };
 
-  // Costing is based on the original purchase quantity, not current stock.
-  // Orders can reduce stock without changing the stored cost.
-  const calculatedUnitCost =
-    Number(formData.purchaseQuantity) > 0
-      ? (Number(formData.totalPurchasePrice || 0) +
-          Number(formData.shippingCost || 0)) /
-        Number(formData.purchaseQuantity)
-      : 0;
+  // Combined base cost calculation
+  const totalBaseCost =
+    Number(formData.unitPrice || 0) +
+    Number(formData.marketingCost || 0) +
+    Number(formData.packagingCost || 0);
 
-  const unitCost = editingId
-    ? Number(
-        products.find((p) => p.id === editingId)?.unitPrice ??
-          calculatedUnitCost,
-      )
-    : calculatedUnitCost;
+  const calculatedSuggestedPrice =
+    Number(formData.unitPrice || 0) > 0
+      ? Math.round(Number(formData.unitPrice) * 1.4)
+      : 0;
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -151,12 +142,25 @@ export default function Inventory() {
         finalImageUrl = await uploadToImgBB(selectedFile);
       }
 
-      const payload = { ...formData, imageUrl: finalImageUrl };
+      const payload = {
+        title: formData.title,
+        unitPrice: Number(formData.unitPrice || 0),
+        marketingCost: Number(formData.marketingCost || 0),
+        packagingCost: Number(formData.packagingCost || 0),
+        stockQuantity: Number(formData.stockQuantity || 0),
+        actualSellingPrice:
+          formData.actualSellingPrice !== ""
+            ? Number(formData.actualSellingPrice)
+            : null,
+        imageUrl: finalImageUrl,
+      };
 
       if (editingId) {
         await api.put(`/products/${editingId}`, payload);
+        toast.success("Product updated successfully! 🎉");
       } else {
         await api.post("/products", payload);
+        toast.success("New product added to inventory! 📦");
       }
 
       setIsModalOpen(false);
@@ -171,7 +175,7 @@ export default function Inventory() {
   const handleInlineUpdate = async (id, field, value) => {
     try {
       const res = await api.patch(`/products/${id}`, {
-        [field]: Number(value),
+        [field]: value === "" ? 0 : Number(value),
       });
       if (res.data.success) {
         setProducts((prev) =>
@@ -179,7 +183,7 @@ export default function Inventory() {
         );
       }
     } catch (err) {
-      alert("Failed to update cost");
+      alert("Failed to update product details");
     }
   };
 
@@ -207,14 +211,14 @@ export default function Inventory() {
     const adjustment = Number(stockFormData.adjustment || 0);
 
     if (adjustment === 0) {
-      alert("Please enter a stock adjustment.");
+      toast.warning("Please enter a non-zero stock adjustment.");
       return;
     }
 
     const newStock = Number(stockFormData.currentStock) + adjustment;
 
     if (newStock < 0) {
-      alert("Stock cannot be negative.");
+      toast.error("Stock level cannot be negative.");
       return;
     }
 
@@ -226,6 +230,7 @@ export default function Inventory() {
       });
 
       if (res.data.success) {
+        toast.success(`Stock updated to ${newStock} units! 📊`);
         setProducts((prev) =>
           prev.map((p) =>
             p.id === stockFormData.productId ? res.data.data : p,
@@ -234,19 +239,24 @@ export default function Inventory() {
         setIsStockModalOpen(false);
       }
     } catch (err) {
-      alert(err.message || "Failed to update stock");
+      toast.error(err.response?.data?.message || "Failed to update stock");
     } finally {
       setStockUpdatingId(null);
     }
   };
 
   const handleDelete = async (id) => {
-    if (!window.confirm("Delete this inventory item?")) return;
+    const isConfirmed = await confirmDelete(
+      "This product will be soft-deleted from inventory.",
+    );
+
+    if (!isConfirmed) return;
     try {
       await api.delete(`/products/${id}`);
+      toast.info("Product soft-deleted from inventory.");
       fetchProducts();
     } catch (err) {
-      alert("Failed to delete product");
+      toast.error("Failed to delete product");
     }
   };
 
@@ -257,11 +267,11 @@ export default function Inventory() {
         <div>
           <h1 className="text-lg font-semibold tracking-tight text-slate-900 flex items-center gap-2">
             <FiBox className="w-4 h-4 text-slate-500" />
-            Inventory & Costing
+            Inventory & Stock Control
           </h1>
           <p className="text-xs text-slate-500 mt-1">
-            Manage inventory, fixed purchase costing, and stock adjustments.
-            Costing changes only when edited manually.
+            Manage product inventory, manual unit costs, marketing, and
+            packaging costs.
           </p>
         </div>
 
@@ -313,7 +323,6 @@ export default function Inventory() {
                 <th className="py-3 px-4 text-right">Unit Cost</th>
                 <th className="py-3 px-4 text-right">Marketing Cost</th>
                 <th className="py-3 px-4 text-right">Packaging Cost</th>
-                <th className="py-3 px-4 text-right">Landed Cost</th>
                 <th className="py-3 px-4 text-right text-slate-500">
                   Suggested Price (+40%)
                 </th>
@@ -343,6 +352,7 @@ export default function Inventory() {
                     className="hover:bg-slate-50/50 transition-colors"
                   >
                     <td className="py-3 px-4 text-center">{index + 1}</td>
+
                     {/* Thumbnail */}
                     <td className="py-3 px-4">
                       {item.imageUrl ? (
@@ -372,15 +382,16 @@ export default function Inventory() {
                       {item.stockQuantity}
                     </td>
 
-                    <td className="py-3 px-4 text-right font-mono text-slate-600">
-                      ৳{item.unitPrice?.toFixed(1)}
+                    {/* Manual Unit Cost */}
+                    <td className="py-3 px-4 text-right font-mono text-slate-800 font-medium">
+                      ৳{Number(item.unitPrice || 0).toLocaleString()}
                     </td>
 
-                    {/* Editable Marketing */}
+                    {/* Editable Marketing Cost */}
                     <td className="py-3 px-4 text-right">
                       <input
                         type="number"
-                        defaultValue={item.marketingCost}
+                        defaultValue={item.marketingCost || 0}
                         onBlur={(e) =>
                           handleInlineUpdate(
                             item.id,
@@ -392,11 +403,11 @@ export default function Inventory() {
                       />
                     </td>
 
-                    {/* Editable Packaging */}
+                    {/* Editable Packaging Cost */}
                     <td className="py-3 px-4 text-right">
                       <input
                         type="number"
-                        defaultValue={item.packagingCost}
+                        defaultValue={item.packagingCost || 0}
                         onBlur={(e) =>
                           handleInlineUpdate(
                             item.id,
@@ -408,12 +419,9 @@ export default function Inventory() {
                       />
                     </td>
 
-                    <td className="py-3 px-4 text-right font-semibold text-slate-800 font-mono">
-                      ৳{item.totalLandedCost?.toFixed(1)}
-                    </td>
-
+                    {/* Suggested Price (+40%) */}
                     <td className="py-3 px-4 text-right font-mono text-slate-400 text-xs">
-                      ৳{item.sellingPrice?.toLocaleString()}
+                      ৳{Number(item.sellingPrice || 0).toLocaleString()}
                     </td>
 
                     {/* Inline Editable Actual Selling Price */}
@@ -421,7 +429,7 @@ export default function Inventory() {
                       <input
                         type="number"
                         defaultValue={
-                          item.actualSellingPrice || item.sellingPrice
+                          item.actualSellingPrice || item.sellingPrice || 0
                         }
                         onBlur={(e) =>
                           handleInlineUpdate(
@@ -437,7 +445,7 @@ export default function Inventory() {
                     <td className="py-3 px-4 text-right space-x-1">
                       <button
                         onClick={() => handleOpenEditModal(item)}
-                        title="Edit costing"
+                        title="Edit product"
                         className="p-1.5 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-lg transition-colors"
                       >
                         <FiEdit3 className="w-3.5 h-3.5" />
@@ -479,13 +487,13 @@ export default function Inventory() {
         </div>
       </div>
 
-      {/* Product Modal */}
+      {/* Product Add / Edit Modal */}
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-xs p-4">
           <div className="bg-white border border-slate-200 rounded-2xl max-w-md w-full p-6 shadow-xl space-y-4">
             <div className="flex items-center justify-between pb-3 border-b border-slate-100">
               <h2 className="text-sm font-semibold text-slate-900">
-                {editingId ? "Edit Inventory Costing" : "Add Inventory Item"}
+                {editingId ? "Edit Product" : "Add New Product"}
               </h2>
               <button
                 onClick={() => setIsModalOpen(false)}
@@ -496,13 +504,13 @@ export default function Inventory() {
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-3">
+              {/* Image Upload Row */}
               <div>
                 <label className="text-[11px] text-slate-600 font-medium block mb-1">
                   Product Photo
                 </label>
 
                 <div className="flex items-center justify-between gap-3">
-                  {/* Image + Upload */}
                   <div className="flex items-center gap-3">
                     {imagePreview ? (
                       <img
@@ -527,20 +535,10 @@ export default function Inventory() {
                       />
                     </label>
                   </div>
-
-                  {/* Per Unit Cost */}
-                  <div className="min-w-[110px] rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-right">
-                    <p className="text-[10px] font-medium text-slate-500">
-                      Per Unit Cost
-                    </p>
-
-                    <p className="text-sm font-semibold font-mono text-slate-900">
-                      ৳ {unitCost.toFixed(2)}
-                    </p>
-                  </div>
                 </div>
               </div>
 
+              {/* Title */}
               <div>
                 <label className="text-[11px] text-slate-600 font-medium block mb-1">
                   Product Title *
@@ -551,97 +549,97 @@ export default function Inventory() {
                   required
                   value={formData.title}
                   onChange={handleInputChange}
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-1.5 text-xs text-slate-800"
+                  placeholder="e.g. Premium Cushion Cover"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-1.5 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-300"
                 />
               </div>
 
+              {/* Unit Cost & Stock Quantity */}
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="text-[11px] text-slate-600 font-medium block mb-1">
-                    Purchase Quantity *
+                    Manual Unit Cost (৳) *
                   </label>
                   <input
                     type="number"
-                    name="purchaseQuantity"
-                    min="1"
+                    name="unitPrice"
+                    min="0"
                     required
-                    value={formData.purchaseQuantity}
+                    value={formData.unitPrice}
                     onChange={handleInputChange}
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-1.5 text-xs text-slate-800"
+                    placeholder="450"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-1.5 text-xs font-mono text-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-300"
                   />
+                  {calculatedSuggestedPrice > 0 && (
+                    <p className="text-[10px] text-slate-400 mt-1">
+                      Rec. Price: ৳{calculatedSuggestedPrice} (+40%)
+                    </p>
+                  )}
                 </div>
 
                 <div>
                   <label className="text-[11px] text-slate-600 font-medium block mb-1">
-                    Total Price (৳) *
+                    Stock Quantity *
                   </label>
                   <input
                     type="number"
-                    name="totalPurchasePrice"
+                    name="stockQuantity"
                     min="0"
                     required
-                    value={formData.totalPurchasePrice}
+                    value={formData.stockQuantity}
                     onChange={handleInputChange}
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-1.5 text-xs font-mono text-slate-800"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-1.5 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-300"
                   />
                 </div>
               </div>
 
-              {editingId && (
-                <div className="flex items-center justify-between rounded-xl bg-slate-50 border border-slate-200 px-3 py-2">
-                  <div>
-                    <p className="text-[10px] font-medium text-slate-500">
-                      Current Stock
-                    </p>
-                    <p className="text-sm font-semibold text-slate-800">
-                      {formData.stockQuantity} pcs
-                    </p>
-                  </div>
-
-                  <button
-                    type="button"
-                    onClick={() => {
-                      const product = products.find((p) => p.id === editingId);
-                      if (product) {
-                        setIsModalOpen(false);
-                        handleOpenStockModal(product);
-                      }
-                    }}
-                    className="px-2.5 py-1.5 text-[10px] font-medium text-slate-700 bg-white border border-slate-200 rounded-lg hover:bg-slate-100"
-                  >
-                    Update Stock
-                  </button>
-                </div>
-              )}
-
+              {/* Marketing Cost & Packaging Cost */}
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="text-[11px] text-slate-600 font-medium block mb-1">
-                    Shipping Cost (৳)
+                    Marketing Cost (৳)
                   </label>
                   <input
                     type="number"
-                    name="shippingCost"
+                    name="marketingCost"
                     min="0"
-                    value={formData.shippingCost}
+                    value={formData.marketingCost}
                     onChange={handleInputChange}
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-1.5 text-xs font-mono text-slate-800"
+                    placeholder="0"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-1.5 text-xs font-mono text-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-300"
                   />
                 </div>
+
                 <div>
                   <label className="text-[11px] text-slate-600 font-medium block mb-1">
-                    Actual Selling Price (৳)
+                    Packaging Cost (৳)
                   </label>
                   <input
                     type="number"
-                    name="actualSellingPrice"
+                    name="packagingCost"
                     min="0"
-                    placeholder="Optional override"
-                    value={formData.actualSellingPrice}
+                    value={formData.packagingCost}
                     onChange={handleInputChange}
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-1.5 text-xs font-mono text-slate-800"
+                    placeholder="0"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-1.5 text-xs font-mono text-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-300"
                   />
                 </div>
+              </div>
+
+              {/* Actual Selling Price */}
+              <div>
+                <label className="text-[11px] text-slate-600 font-medium block mb-1">
+                  Actual Selling Price (৳)
+                </label>
+                <input
+                  type="number"
+                  name="actualSellingPrice"
+                  min="0"
+                  placeholder="Leave empty to use suggested price (+40%)"
+                  value={formData.actualSellingPrice}
+                  onChange={handleInputChange}
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-1.5 text-xs font-mono text-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-300"
+                />
               </div>
 
               <div className="flex justify-end gap-2 pt-2">
@@ -655,15 +653,16 @@ export default function Inventory() {
                 <button
                   type="submit"
                   disabled={submitting}
-                  className="px-4 py-1.5 text-xs font-medium text-white bg-slate-900 rounded-xl"
+                  className="px-4 py-1.5 text-xs font-medium text-white bg-slate-900 rounded-xl disabled:opacity-50"
                 >
-                  {submitting ? "Saving..." : "Save Record"}
+                  {submitting ? "Saving..." : "Save Product"}
                 </button>
               </div>
             </form>
           </div>
         </div>
       )}
+
       {/* Stock Update Modal */}
       {isStockModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-xs p-4">

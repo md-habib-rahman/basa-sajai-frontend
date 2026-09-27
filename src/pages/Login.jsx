@@ -6,8 +6,8 @@ export default function Login() {
     await signIn.social({
       provider: "google",
       callbackURL: import.meta.env.VITE_APP_URL
-        ? `${import.meta.env.VITE_APP_URL}/inventory`
-        : "https://basa-sajai-frontend.vercel.app/inventory",
+        ? `${import.meta.env.VITE_APP_URL}/`
+        : "https://basa-sajai-frontend.vercel.app/",
     });
   };
 
