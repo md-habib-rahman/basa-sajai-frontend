@@ -166,7 +166,8 @@ export default function Inventory() {
       setIsModalOpen(false);
       fetchProducts();
     } catch (err) {
-      alert(err.message || "Failed to save record");
+      toast.alert(err.message || "Failed to save record");
+      //   alert(err.message || "Failed to save record");
     } finally {
       setSubmitting(false);
     }
@@ -183,7 +184,8 @@ export default function Inventory() {
         );
       }
     } catch (err) {
-      alert("Failed to update product details");
+      toast.alert("Failed to update product details");
+    //   alert("Failed to update product details");
     }
   };
 

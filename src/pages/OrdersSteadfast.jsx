@@ -14,6 +14,8 @@ import {
   FiTruck,
   FiRefreshCw,
 } from "react-icons/fi";
+import { confirmSend, confirmDelete } from "../lib/confirm";
+import { toast } from "react-toastify";
 
 export default function OrdersSteadfast() {
   const [orders, setOrders] = useState([]);
@@ -156,26 +158,38 @@ export default function OrdersSteadfast() {
       setEditingOrderId(null);
       fetchOrders();
     } catch (err) {
-      alert(
+      toast.alert(
         err.response?.data?.message || err.message || "Failed to save order",
       );
+      //   alert(
+      //     err.response?.data?.message || err.message || "Failed to save order",
+      //   );
     } finally {
       setSubmitting(false);
     }
   };
 
   const handleSendToSteadfast = async (orderId) => {
-    if (!window.confirm("Send this order to Steadfast Courier?")) return;
+    // if (!window.confirm("Send this order to Steadfast Courier?")) return;
+    const isSend = await confirmSend("This order will be sent to Steadfast.");
+
+    if (!isSend) return;
     try {
       setDispatchingId(orderId);
       const res = await api.post(`/orders/${orderId}/send-to-steadfast`);
       if (res.data.success) {
-        alert(`Dispatched! CID: ${res.data.data?.consignmentId || "Created"}`);
+        // alert(`Dispatched! CID: ${res.data.data?.consignmentId || "Created"}`);
+        toast.success(
+          `Dispatched! CID: ${res.data.data?.consignmentId || "Created"}`,
+        );
         fetchOrders();
         fetchSteadfastBalance();
       }
     } catch (err) {
-      alert(err.response?.data?.message || err.message || "Dispatch failed");
+      toast.error(
+        err.response?.data?.message || err.message || "Dispatch failed",
+      );
+      //   alert(err.response?.data?.message || err.message || "Dispatch failed");
     } finally {
       setDispatchingId(null);
     }
@@ -187,7 +201,7 @@ export default function OrdersSteadfast() {
       const res = await api.post(`/orders/${orderId}/sync-steadfast`);
       if (res.data.success) fetchOrders();
     } catch (err) {
-      alert("Failed to sync Steadfast status");
+      toast.alert("Failed to sync Steadfast status");
     } finally {
       setSyncingId(null);
     }
@@ -204,7 +218,8 @@ export default function OrdersSteadfast() {
         );
       }
     } catch (err) {
-      alert("Failed to update status");
+      toast.alert("Failed to update status");
+      //   alert("Failed to update status");
     }
   };
 
@@ -223,17 +238,24 @@ export default function OrdersSteadfast() {
         );
       }
     } catch (err) {
-      alert("Failed to update actual received amount");
+      //   alert("Failed to update actual received amount");
+      toast.alert("Failed to update actual received amount");
     }
   };
 
   const handleDeleteOrder = async (orderId) => {
+    const isConfirmed = await confirmDelete(
+      "This order will be soft-deleted from Order List",
+    );
+
+    if (!isConfirmed) return;
     if (!window.confirm("Delete this order?")) return;
     try {
       await api.delete(`/orders/${orderId}`);
       fetchOrders();
     } catch (err) {
-      alert("Failed to delete order");
+      toast.alert("Failed to delete order");
+      //   alert("Failed to delete order");
     }
   };
 
