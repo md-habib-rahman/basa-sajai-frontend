@@ -26,9 +26,9 @@ export const confirmSend = async (title = "Send to Steadfast?") => {
 
     icon: "warning",
     showCancelButton: true,
-    confirmButtonColor: "#e11d48", // Tailwind rose-600
+    confirmButtonColor: "text-emerald-800", // Tailwind rose-600
     cancelButtonColor: "#64748b", // Tailwind slate-500
-    confirmButtonText: "Yes, delete it!",
+    confirmButtonText: "Yes, send it!",
     cancelButtonText: "Cancel",
     customClass: {
       popup: "rounded-2xl font-sans",
