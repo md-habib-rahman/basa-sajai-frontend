@@ -5,7 +5,8 @@ export default function Login() {
   const handleGoogleLogin = async () => {
     await signIn.social({
       provider: "google",
-      callbackURL: "https://basa-sajai-frontend.vercel.app/",
+      //   callbackURL: "https://basa-sajai-frontend.vercel.app/",
+      callbackURL: "http://localhost:5173/",
     });
   };
 

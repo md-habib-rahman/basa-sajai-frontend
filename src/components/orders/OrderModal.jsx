@@ -114,6 +114,28 @@ export default function OrderModal({
 
           <div>
             <label className="text-[11px] font-medium text-slate-600 block mb-1">
+              Customer Phone *
+            </label>
+            <input
+              type="tel"
+              required
+              inputMode="numeric"
+              placeholder="01XXXXXXXXX"
+              pattern="01[3-9][0-9]{8}"
+              title="11-digit Bangladeshi mobile number, e.g. 01712345678"
+              value={formData.customerPhone || ""}
+              onChange={(e) =>
+                setFormData((prev) => ({
+                  ...prev,
+                  customerPhone: e.target.value.trim(),
+                }))
+              }
+              className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-1.5 text-xs font-mono text-slate-800"
+            />
+          </div>
+
+          <div>
+            <label className="text-[11px] font-medium text-slate-600 block mb-1">
               Shipping Address *
             </label>
             <textarea

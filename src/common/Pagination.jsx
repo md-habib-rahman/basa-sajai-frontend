@@ -4,7 +4,7 @@ import { FiChevronLeft, FiChevronRight } from "react-icons/fi";
 export default function Pagination({ meta, onPageChange, onLimitChange }) {
   if (!meta || meta.totalPages <= 1) return null;
 
-  console.log(meta);
+//   console.log(meta);
   const { currentPage, totalPages, totalItems, itemsPerPage } = meta;
 
   return (

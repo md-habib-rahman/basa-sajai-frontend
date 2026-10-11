@@ -3,6 +3,10 @@ import { FiX, FiPrinter } from "react-icons/fi";
 
 export default function InvoiceModal({ order, onClose }) {
   if (!order) return null;
+  const hasItemDiscount =
+    order.items?.some((item) => Number(item.itemDiscount) > 0) ?? false;
+
+  console.log("Rendering InvoiceModal with order:", order);
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-xs p-4">
@@ -58,6 +62,7 @@ export default function InvoiceModal({ order, onClose }) {
               <th className="py-2">Item</th>
               <th className="py-2 text-center">Qty</th>
               <th className="py-2 text-right">Unit Price</th>
+              {hasItemDiscount && <th className="py-2 text-right">Discount</th>}
               <th className="py-2 text-right">Total</th>
             </tr>
           </thead>
@@ -73,7 +78,13 @@ export default function InvoiceModal({ order, onClose }) {
                 <td className="py-2 text-right font-mono text-slate-600">
                   ৳{item.unitPrice}
                 </td>
-                <td className="py-2 text-right font-mono font-semibold text-slate-800">
+                {hasItemDiscount && (
+                  <td className="py-2 text-right font-mono font-semibold text-slate-800">
+                    ৳{item.itemDiscount}
+                  </td>
+                )}
+
+                <td className="py-2 text-right font-mono text-slate-600">
                   ৳{item.total}
                 </td>
               </tr>
