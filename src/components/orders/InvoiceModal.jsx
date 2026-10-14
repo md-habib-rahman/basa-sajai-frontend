@@ -6,6 +6,9 @@ export default function InvoiceModal({ order, onClose }) {
   const hasItemDiscount =
     order.items?.some((item) => Number(item.itemDiscount) > 0) ?? false;
 
+  const itemsTotal =
+    order.items?.reduce((sum, item) => sum + Number(item.total || 0), 0) ?? 0;
+
   console.log("Rendering InvoiceModal with order:", order);
 
   return (
@@ -94,6 +97,9 @@ export default function InvoiceModal({ order, onClose }) {
 
         {/* Calculations */}
         <div className="text-xs space-y-1 text-right">
+          <div className="text-slate-500">
+            Items Total: ৳{itemsTotal.toLocaleString()}
+          </div>
           <div className="text-slate-500">
             Delivery Fee: ৳{order.deliveryFee}
           </div>
